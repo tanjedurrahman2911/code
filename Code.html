@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Problem Set Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+    }
+    h1 { text-align: center; }
+    .problem {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .solved {
+      background: #d4ffd4;
+      text-decoration: line-through;
+    }
+  </style>
+</head>
+<body>
+  <h1>Problem Set Tracker</h1>  <input id="problemInput" type="text" placeholder="Enter a problem" style="width: 70%; padding: 8px;" />
+  <button onclick="addProblem()" style="padding: 8px 12px;">Add</button>  <div id="list"></div>  <script>
+    const list = document.getElementById("list");
+    const members = ["Tanjed", "Abdullah", "Jim"]; // You can rename
+
+    function addProblem() {
+      const text = document.getElementById("problemInput").value;
+      if (!text) return;
+
+      const div = document.createElement("div");
+      div.className = "problem";
+
+      const span = document.createElement("span");
+      span.textContent = text;
+
+      const memberButtons = document.createElement("div");
+      memberButtons.style.display = "flex";
+      memberButtons.style.gap = "6px";
+
+      members.forEach(member => {
+        const btn = document.createElement("button");
+        btn.textContent = member;
+        btn.onclick = () => {
+          btn.classList.toggle("solved");
+        };
+        memberButtons.appendChild(btn);
+      });
+
+      div.appendChild(span);
+      div.appendChild(memberButtons);
+      list.appendChild(div);
+
+      document.getElementById("problemInput").value = "";
+    }
+  </script></body>
+</html>
