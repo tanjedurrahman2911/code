@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Collaborative Problem Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <base target="_top">
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔗 Collaborative Problem Tracker</h1>
+      
+      <form id="problemForm">
+        <div class="form-group">
+          <label for="linkInput">Add New Problem Link:</label>
+          <input type="url" id="linkInput" placeholder="Paste problem link here..." required>
+        </div>
+        <button type="submit">Add Problem</button>
+      </form>
+      
+      <hr>
+      
+      <h2>🎯 Current Problems</h2>
+      <div id="problemList" class="problem-list">
+        <div class="loading">Loading problems...</div>
+      </div>
+    </div>
+    
+    <script src="script.js"></script>
+  </body>
+</html>
