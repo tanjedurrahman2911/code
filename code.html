@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Problem Set Tracker — Shared</title>
+  <title>Problem Set Tracker — Debug Version</title>
   <style>
     body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 10px; }
     h1 { text-align:center; }
@@ -17,7 +17,7 @@
   </style>
 </head>
 <body>
-  <h1>Problem Set Tracker (Shared)</h1>
+  <h1>Problem Set Tracker — Debug</h1>
 
   <div class="controls">
     <input id="problemInput" type="text" placeholder="Enter problem title (e.g., CF 1234A)" />
@@ -32,6 +32,11 @@
 
   <div id="list"></div>
   <div id="summary"></div>
+
+  <div style="margin-top:20px; border:1px solid #ccc; padding:10px;">
+    <strong>Debug Log:</strong>
+    <pre id="debug"></pre>
+  </div>
 
   <!-- Firebase SDKs (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
@@ -49,35 +54,33 @@
       measurementId: "G-B8HTBC6SQL"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const members = ["Tanjed", "Abdullah", "Jim"];
-
     const listEl = document.getElementById('list');
     const inputEl = document.getElementById('problemInput');
     const addBtn = document.getElementById('addBtn');
     const currentUserSelect = document.getElementById('currentUser');
     const summaryEl = document.getElementById('summary');
+    const debugEl = document.getElementById('debug');
 
     // Add problem
     addBtn.onclick = () => {
       const text = inputEl.value.trim();
       if (!text) return alert('Enter a problem name');
-
       db.ref('problems').push({
         text,
         solved: [false,false,false],
         createdAt: Date.now()
       });
-
       inputEl.value = '';
     };
 
-    // Listen to database changes
+    // Listen for database changes
     db.ref('problems').on('value', snapshot => {
       const data = snapshot.val() || {};
+      debugEl.textContent = JSON.stringify(data, null, 2); // show raw data for debug
       renderProblems(data);
       renderSummary(data);
     });
@@ -85,18 +88,15 @@
     function renderProblems(data) {
       listEl.innerHTML = '';
       const items = Object.entries(data).sort((a,b) => a[1].createdAt - b[1].createdAt);
-
       items.forEach(([id, problem]) => {
         const div = document.createElement('div');
         div.className = 'problem';
 
-        // Problem title
         const title = document.createElement('div');
         title.className = 'p-title';
         title.textContent = problem.text;
         div.appendChild(title);
 
-        // Member buttons
         members.forEach((m, idx) => {
           const btn = document.createElement('button');
           btn.className = 'member';
@@ -120,7 +120,7 @@
       const total = arr.length;
       const counts = [0,0,0];
       arr.forEach(p => p.solved.forEach((v,i)=> counts[i] += v ? 1 : 0));
-      summaryEl.textContent = Total problems: ${total} | ${members.map((m,i)=>`${m}: ${counts[i]} solved).join(' | ')}`;
+      summaryEl.textContent = `Total problems: ${total} | ${members.map((m,i)=>`${m}: ${counts[i]} solved`).join(' | ')}`;
     }
   </script>
 </body>
