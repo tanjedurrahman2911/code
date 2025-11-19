@@ -148,9 +148,24 @@ const analytics = getAnalytics(app);
 
       db.ref('problems/' + id + '/solved').set(updated);
 
-      if (updated.every(Boolean)) {
-        db.ref('problems/' + id).remove();
-      }
+      db.ref('problems/' + id + '/solved').set(updated);
+      members.forEach((m, idx) => {
+  const btn = document.createElement('button');
+  btn.textContent = m;
+  if (p.solved[idx]) btn.style.textDecoration = 'line-through'; // shows solved
+  btn.onclick = () => toggleSolved(id, idx, p);
+  div.appendChild(btn);
+});
+You sent
+function renderSummary(data) {
+  const arr = Object.values(data || {});
+  const total = arr.length;
+  const counts = [0,0,0];
+  arr.forEach(p => p.solved.forEach((v,i) => counts[i] += v ? 1 : 0));
+  document.getElementById('summary').innerHTML =
+    Total problems: ${total} | ${members.map((m,i)=>`${m}: ${counts[i]} solved).join(' | ')}`;
+}
+
     }
 
     // Summary
