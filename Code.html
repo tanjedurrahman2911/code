@@ -1,63 +1,167 @@
-<!DOCTYPE html><html lang="en">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Problem Set Tracker</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Problem Set Tracker — Shared</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 40px auto;
-    }
-    h1 { text-align: center; }
-    .problem {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-    .solved {
-      background: #d4ffd4;
-      text-decoration: line-through;
-    }
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 10px; }
+    h1 { text-align:center; }
+    .controls { display:flex; gap:8px; margin-bottom:12px; align-items:center; flex-wrap:wrap; }
+    input[type=text] { padding:8px; width: 320px; }
+    .problem { display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:8px; gap:12px; }
+    .p-left { display:flex; align-items:center; gap:12px; min-width: 0; }
+    .p-title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    button.member { padding:6px 10px; border-radius:6px; border:1px solid #ccc; cursor:pointer; }
+    button.remove { padding:6px 10px; background:#f44336; color:white; border:none; border-radius:6px; cursor:pointer;}
+    .solved-true { opacity:0.6; text-decoration:line-through; }
+    #summary { margin-top:12px; }
+    .user-select { padding:6px; border-radius:6px; }
   </style>
 </head>
 <body>
-  <h1>Problem Set Tracker</h1>  <input id="problemInput" type="text" placeholder="Enter a problem" style="width: 70%; padding: 8px;" />
-  <button onclick="addProblem()" style="padding: 8px 12px;">Add</button>  <div id="list"></div>  <script>
-    const list = document.getElementById("list");
-    const members = ["Tanjed", "Abdullah", "Jim"]; // You can rename
+  <h1>Problem Set Tracker (Shared)</h1>
 
-    function addProblem() {
-      const text = document.getElementById("problemInput").value;
-      if (!text) return;
+  <div class="controls">
+    <input id="problemInput" type="text" placeholder="Enter problem title (e.g., CF 1234A)"/>
+    <button id="addBtn">Add Problem</button>
 
-      const div = document.createElement("div");
-      div.className = "problem";
+    <label for="currentUser">I am:</label>
+    <select id="currentUser" class="user-select">
+      <option value="0">Tanjed</option>
+      <option value="1">Abdullah</option>
+      <option value="2">Jim</option>
+    </select>
 
-      const span = document.createElement("span");
-      span.textContent = text;
+    <button id="clearAll" title="(Admin) Remove all problems">Clear All</button>
+  </div>
 
-      const memberButtons = document.createElement("div");
-      memberButtons.style.display = "flex";
-      memberButtons.style.gap = "6px";
+  <div id="list"></div>
+  <div id="summary"></div>
 
-      members.forEach(member => {
-        const btn = document.createElement("button");
-        btn.textContent = member;
-        btn.onclick = () => {
-          btn.classList.toggle("solved");
-        };
-        memberButtons.appendChild(btn);
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-database-compat.js"></script>
+
+  <script>
+    // ====== PASTE YOUR FIREBASE CONFIG OBJECT HERE ======
+    const firebaseConfig = {
+  apiKey: "AIzaSyCB36PjmSMjAzE38KXErzas6EUfsF_riFU",
+  authDomain: "code-9c212.firebaseapp.com",
+  databaseURL: "https://code-9c212-default-rtdb.firebaseio.com",
+  projectId: "code-9c212",
+  storageBucket: "code-9c212.firebasestorage.app",
+  messagingSenderId: "186722716088",
+  appId: "1:186722716088:web:1d80997f7190a597b6e74d",
+  measurementId: "G-B8HTBC6SQL"
+};
+
+    // ====== Initialize Firebase ======
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Members
+    const members = ["Tanjed", "Abdullah", "Jim"];
+
+    // UI refs
+    const listEl = document.getElementById('list');
+    const inputEl = document.getElementById('problemInput');
+    const addBtn = document.getElementById('addBtn');
+    const currentUserSelect = document.getElementById('currentUser');
+    const clearAllBtn = document.getElementById('clearAll');
+    const summaryEl = document.getElementById('summary');
+
+    // Add problem to DB
+    addBtn.onclick = () => {
+      const text = inputEl.value.trim();
+      if (!text) return alert('Enter a problem name');
+
+      const newProblemRef = db.ref('problems').push();
+      newProblemRef.set({
+        text: text,
+        solved: [false, false, false],
+        createdAt: Date.now()
       });
+      inputEl.value = '';
+    };
 
-      div.appendChild(span);
-      div.appendChild(memberButtons);
-      list.appendChild(div);
+    // Realtime listener
+    db.ref('problems').on('value', snapshot => {
+      const data = snapshot.val() || {};
+      renderProblems(data);
+      renderSummary(data);
+    });
 
-      document.getElementById("problemInput").value = "";
+    // Render problems
+    function renderProblems(data) {
+      listEl.innerHTML = '';
+      const items = Object.entries(data).sort((a,b) => a[1].createdAt - b[1].createdAt);
+
+      items.forEach(([id, p]) => {
+        const div = document.createElement('div');
+        div.className = 'problem';
+
+        const left = document.createElement('div');
+        left.className = 'p-left';
+
+        const title = document.createElement('div');
+        title.className = 'p-title';
+        title.textContent = p.text;
+        left.appendChild(title);
+        div.appendChild(left);
+
+        const right = document.createElement('div');
+        right.style.display = 'flex';
+        right.style.gap = '8px';
+
+        members.forEach((m, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'member';
+          btn.textContent = m;
+
+          if (p.solved[idx]) btn.classList.add('solved-true');
+
+          btn.onclick = () => toggleSolved(id, idx, p);
+          right.appendChild(btn);
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove';
+        removeBtn.textContent = 'Delete';
+        removeBtn.onclick = () => db.ref('problems/' + id).remove();
+        right.appendChild(removeBtn);
+
+        div.appendChild(right);
+        listEl.appendChild(div);
+      });
     }
-  </script></body>
+
+    // Toggle solved
+    function toggleSolved(id, memberIndex, p) {
+      p.solved = p.solved || [false,false,false];
+      const updated = p.solved.slice();
+      updated[memberIndex] = !updated[memberIndex];
+
+      db.ref('problems/' + id + '/solved').set(updated);
+
+      if (updated.every(Boolean)) {
+        db.ref('problems/' + id).remove();
+      }
+    }
+
+    // Summary
+    function renderSummary(data) {
+      const arr = Object.values(data);
+      const total = arr.length;
+
+      const counts = [0,0,0];
+      arr.forEach(p => p.solved.forEach((v,i) => counts[i] += v ? 1 : 0));
+
+      summaryEl.innerHTML = `
+        <strong>Total:</strong> ${total} |
+        ${members.map((m,i)=>`${m}: ${counts[i]}`).join(' | ')}
+      `;
+    }
+  </script>
+</body>
 </html>
