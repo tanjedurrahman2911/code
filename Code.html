@@ -167,7 +167,83 @@ const analytics = getAnalytics(app);
       `;
     }
   </script>
-  <script type="module">import { initializeApp } from "firebase/app";
+  <script type="module">
+    const members = ["Tanjed", "Abdullah", "Jim"];
+    const inputEl = document.getElementById('problemInput');
+const addBtn = document.getElementById('addBtn');
+
+addBtn.onclick = () => {
+  const text = inputEl.value.trim();
+  if (!text) return alert('Enter a problem name');
+
+  const newProblemRef = db.ref('problems').push();
+  newProblemRef.set({
+    text: text,
+    solved: [false, false, false],
+    createdAt: Date.now()
+  });
+
+  inputEl.value = '';
+};
+    db.ref('problems').on('value', snapshot => {
+  const data = snapshot.val() || {};
+  renderProblems(data);
+  renderSummary(data);
+});
+    function renderProblems(data) {
+  const listEl = document.getElementById('list');
+  listEl.innerHTML = '';
+
+  const items = Object.entries(data).sort((a,b) => a[1].createdAt - b[1].createdAt);
+
+  items.forEach(([id, p]) => {
+    const div = document.createElement('div');
+    div.className = 'problem';
+
+    // Problem title
+    const title = document.createElement('div');
+    title.textContent = p.text;
+    div.appendChild(title);
+
+    // Buttons for each member
+    members.forEach((m, idx) => {
+      const btn = document.createElement('button');
+      btn.textContent = m;
+
+      if (p.solved[idx]) btn.style.textDecoration = 'line-through';
+
+      btn.onclick = () => toggleSolved(id, idx, p);
+      div.appendChild(btn);
+    });
+
+    listEl.appendChild(div);
+  });
+}
+You sent
+function renderSummary(data) {
+  const arr = Object.values(data || {});
+  const total = arr.length;
+
+  const counts = [0,0,0];
+  arr.forEach(p => p.solved.forEach((v,i) => counts[i] += v ? 1 : 0));
+
+  document.getElementById('summary').innerHTML =
+    Total problems: ${total} | ${members.map((m,i)=>`${m}: ${counts[i]}).join(' | ')}`;
+}
+You sent
+function toggleSolved(id, memberIndex, p) {
+  p.solved = p.solved || [false,false,false];
+  const updated = p.solved.slice();
+  updated[memberIndex] = !updated[memberIndex];
+
+  db.ref('problems/' + id + '/solved').set(updated);
+
+  // If all solved, remove problem
+  if (updated.every(Boolean)) {
+    db.ref('problems/' + id).remove();
+  }
+}
+    import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
