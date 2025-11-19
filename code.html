@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Problem Set Tracker — Shared</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 10px; }
+    h1 { text-align:center; }
+    .controls { display:flex; gap:8px; margin-bottom:12px; align-items:center; flex-wrap:wrap; }
+    input[type=text] { padding:8px; width: 320px; }
+    .problem { display:flex; justify-content:space-between; align-items:center; padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:8px; gap:12px; }
+    .p-left { display:flex; align-items:center; gap:12px; min-width: 0; }
+    .p-title { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    button.member { padding:6px 10px; border-radius:6px; border:1px solid #ccc; cursor:pointer; }
+    .solved-true { opacity:0.6; text-decoration:line-through; }
+    #summary { margin-top:12px; }
+    .user-select { padding:6px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <h1>Problem Set Tracker (Shared)</h1>
+
+  <div class="controls">
+    <input id="problemInput" type="text" placeholder="Enter problem title (e.g., CF 1234A)"/>
+    <button id="addBtn">Add Problem</button>
+
+    <label for="currentUser">I am:</label>
+    <select id="currentUser" class="user-select">
+      <option value="0">Tanjed</option>
+      <option value="1">Abdullah</option>
+      <option value="2">Jim</option>
+    </select>
+  </div>
+
+  <div id="list"></div>
+  <div id="summary"></div>
+
+  <!-- Firebase SDKs (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-database-compat.js"></script>
+
+  <script>
+    // ====== Firebase Config ======
+    const firebaseConfig = {
+      apiKey: "AIzaSyCB36PjmSMjAzE38KXErzas6EUfsF_riFU",
+      authDomain: "code-9c212.firebaseapp.com",
+      databaseURL: "https://code-9c212-default-rtdb.firebaseio.com",
+      projectId: "code-9c212",
+      storageBucket: "code-9c212.firebasestorage.app",
+      messagingSenderId: "186722716088",
+      appId: "1:186722716088:web:1d80997f7190a597b6e74d",
+      measurementId: "G-B8HTBC6SQL"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const members = ["Tanjed", "Abdullah", "Jim"];
+
+    const listEl = document.getElementById('list');
+    const inputEl = document.getElementById('problemInput');
+    const addBtn = document.getElementById('addBtn');
+    const currentUserSelect = document.getElementById('currentUser');
+    const summaryEl = document.getElementById('summary');
+
+    // Add problem
+    addBtn.onclick = () => {
+      const text = inputEl.value.trim();
+      if (!text) return alert('Enter a problem name');
+
+      db.ref('problems').push({
+        text,
+        solved: [false,false,false],
+        createdAt: Date.now()
+      });
+
+      inputEl.value = '';
+    };
+
+    // Real-time listener
+    db.ref('problems').on('value', snapshot => {
+      const data = snapshot.val() || {};
+      renderProblems(data);
+      renderSummary(data);
+    });
+
+    // Render problems
+    function renderProblems(data) {
+      listEl.innerHTML = '';
+      const items = Object.entries(data).sort((a,b)=> a[1].createdAt - b[1].createdAt);
+
+      items.forEach(([id, p]) => {
+        const div = document.createElement('div');
+        div.className = 'problem';
+
+        const left = document.createElement('div');
+        left.className = 'p-left';
+        const title = document.createElement('div');
+        title.className = 'p-title';
+        title.textContent = p.text;
+        left.appendChild(title);
+        div.appendChild(left);
+
+        const right = document.createElement('div');
+        right.style.display = 'flex';
+        right.style.gap = '8px';
+
+        members.forEach((m, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'member';
+          btn.textContent = m;
+          if (p.solved[idx]) btn.classList.add('solved-true');
+
+          btn.onclick = () => toggleSolved(id, idx, p);
+          right.appendChild(btn);
+        });
+
+        div.appendChild(right);
+        listEl.appendChild(div);
+      });
+    }
+
+    // Toggle solved
+    function toggleSolved(id, memberIndex, p) {
+      const updated = [...(p.solved || [false,false,false])];
+      updated[memberIndex] = !updated[memberIndex];
+      db.ref('problems/' + id + '/solved').set(updated);
+    }
+
+    // Render summary
+    function renderSummary(data) {
+      const arr = Object.values(data || {});
+      const total = arr.length;
+      const counts = [0,0,0];
+      arr.forEach(p => p.solved.forEach((v,i)=> counts[i] += v ? 1 : 0));
+
+      summaryEl.innerHTML = Total problems: ${total} | ${members.map((m,i)=>`${m}: ${counts[i]} solved).join(' | ')}`;
+    }
+  </script>
+</body>
+</html>
