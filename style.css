@@ -1,0 +1,67 @@
+/* style.css (Appearance) */
+body { 
+    font-family: sans-serif; 
+    margin: 20px; 
+    background-color: #f4f4f9; 
+}
+.container { 
+    max-width: 800px; 
+    margin: auto; 
+    padding: 20px; 
+    background: white; 
+    border-radius: 8px; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+h1 { 
+    text-align: center; 
+    color: #333; 
+}
+.form-group { 
+    margin-bottom: 15px; 
+}
+input[type="url"], button { 
+    width: 100%; 
+    padding: 10px; 
+    border-radius: 4px; 
+    border: 1px solid #ccc; 
+    box-sizing: border-box; 
+}
+button { 
+    background-color: #5cb85c; 
+    color: white; 
+    border: none; 
+    cursor: pointer; 
+    margin-top: 10px; 
+}
+button:hover { 
+    background-color: #4cae4c; 
+}
+.problem-list { 
+    margin-top: 20px; 
+}
+.problem-item { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 10px 0; 
+    border-bottom: 1px dashed #eee; 
+}
+.problem-link a { 
+    color: #007bff; 
+    text-decoration: none; 
+    font-weight: bold; 
+    word-break: break-all; 
+}
+.solvers label { 
+    margin-left: 15px; 
+    cursor: pointer; 
+    white-space: nowrap; 
+}
+.loading { 
+    text-align: center; 
+    color: #666; 
+    margin-top: 20px; 
+}
+.solved-item { 
+    opacity: 0.5;
+}
