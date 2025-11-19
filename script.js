@@ -1,7 +1,7 @@
 // --- script.js (Connection and Logic) ---
 
 // ⚠️ IMPORTANT: REPLACE THIS URL WITH YOUR WEB APP URL FROM STEP 1.2!
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwhoa-4zgsRvr1jaeV-g-y4rSJ2o0LvjmEiuln5EZXRrXY79n6kbLWhZafnzq5_iyF/exec'; 
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyc5qJy36l0Z6402QJDu_mK5YyB3vPK9OItqBfMiotVAJs9RCF_Z4lU_-VI4hRDwMQh/exec'; 
 
 // Names for the three people
 const PERSON_NAMES = ["TANJED", "ABDULLAH", "JIM"]; 
