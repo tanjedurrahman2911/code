@@ -16,7 +16,7 @@ async function sendRequest(action, data = {}) {
         url.searchParams.append(key, data[key]);
     }
     try {
-        const response = await fetch(url, { method: 'GET' });
+        const response = await fetch(url, { method: 'getData' });
         const result = await response.json();
         return result;
     } catch (error) {
